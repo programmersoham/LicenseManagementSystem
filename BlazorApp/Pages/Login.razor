@@ -1,8 +1,11 @@
-﻿@page "/"
+﻿@page "/login"
 @using BlazorApp
-
+@using BlazorApp.Authentication
 @inject HttpClient HttpClient
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider authStateProvider
+
+
 
 @using System.Net.Http.Json;
 @using System.Security.Claims;
@@ -29,7 +32,7 @@
             }
             else
             {
-                NavigationManager.NavigateTo("/AddLicense");
+                NavigationManager.NavigateTo("/addLicense");
             }
         </div>
     </div>
@@ -62,14 +65,13 @@
                     IsAuthenticated = true;
 
                     // Update Authentication State
-
-
-
-
-
-
-
-                    NavigationManager.NavigateTo("/addlicense", forceLoad: true, replace: true);
+                    var customAuthStateProvider = (CustomAuthenticationStateProvider)authStateProvider;
+                    await customAuthStateProvider.UpdateAuthenticationState(new UserSession
+                        {
+                            UserName = loginModel.Username,
+                            
+                        });
+                                       NavigationManager.NavigateTo("/addlicense", forceLoad: true, replace: true);
                 }
                 else
                 {
@@ -84,6 +86,7 @@
             }
         }
     }
+  
 }
  
 

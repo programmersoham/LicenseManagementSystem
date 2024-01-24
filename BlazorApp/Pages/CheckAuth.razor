@@ -1,8 +1,8 @@
 ﻿
 @page "/check-auth"
 @using Microsoft.AspNetCore.Components.Authorization
-@inject AuthenticationStateProvider AuthenticationStateProvider
-@* @inject CustomAuthenticationStateProvider AuthenticationStateProvider *@
+@inject AuthenticationStateProvider authStateProvider
+
 
 <p>@authMessage</p>
 
@@ -15,7 +15,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var authState = await authStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
 
         if (user.Identity.IsAuthenticated)

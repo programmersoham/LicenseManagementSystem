@@ -1,0 +1,36 @@
+﻿@page "/"
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider authStateProvider
+@inject NavigationManager NavigationManager
+
+<AuthorizeView><Authorized><p>@authMessage</p></Authorized></AuthorizeView>
+
+@code {
+    private string? authMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CheckAuthenticationStateAsync();
+    }
+
+    private async Task CheckAuthenticationStateAsync()
+    {
+        var authState = await authStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated ?? false)
+        {
+            authMessage = $" Welcome {user.Identity?.Name}";
+        }
+        else
+        {
+            RedirectToLogin();
+        }
+    }
+
+    private void RedirectToLogin()
+    {
+        // Redirect to login page
+        NavigationManager.NavigateTo("/login", forceLoad: true);
+    }
+}
