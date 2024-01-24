@@ -1,0 +1,49 @@
+﻿@page "/application/add"
+
+
+@using BlazorApp.Models
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@attribute [Authorize]
+<h2>Add Application</h2>
+
+<EditForm Model="@application" OnValidSubmit="SaveApplication">
+    <DataAnnotationsValidator />
+
+    <div class="mb-3">
+        <label for="ApplicationName" class="form-label">Application Name</label>
+        <div class="col-md-4">
+            <InputText class="form-control" @bind-Value="application.ApplicationName" />
+        </div>
+        <ValidationMessage For="@(() => application.ApplicationName)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="Description" class="form-label">Description</label>
+        <div class="col-md-4">
+            <InputText class="form-control" @bind-Value="application.Description" />
+        </div>
+        <ValidationMessage For="@(() => application.Description)" />
+    </div>
+
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <button class="btn btn-light" @onclick="Cancel">Cancel</button>
+    </div>
+</EditForm>
+
+@code {
+    private const string RequestUri = "https://localhost:7199/api/Application";
+    // protected ApplicationModel application = new ApplicationModel();
+    protected ApplicationModel application = new ApplicationModel();
+    protected async Task SaveApplication()
+    {
+        await Http.PostAsJsonAsync(RequestUri, application);
+        Cancel();
+    }
+
+    public void Cancel()
+    {
+        NavigationManager.NavigateTo("/manageapplication");
+    }
+}

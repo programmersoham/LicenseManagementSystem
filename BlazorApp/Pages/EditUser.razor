@@ -1,0 +1,82 @@
+﻿@page "/user/edit/{userId:int}"
+@attribute [Authorize]
+@using BlazorApp.Models
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<EditForm Model="@user" OnValidSubmit="SaveUser">
+    <DataAnnotationsValidator />
+    <div class="mb-3">
+        <label for="FirstName" class="form-label">First Name</label>
+        <div class="col-md-4">
+            <InputText class="form-control" @bind-Value="user.FirstName" />
+        </div>
+        <ValidationMessage For="@(() => user.FirstName)" />
+    </div>
+    <div class="mb-3">
+        <label for="LastName" class="form-label">Last Name</label>
+        <div class="col-md-4">
+            <InputText class="form-control" @bind-Value="user.LastName" />
+        </div>
+        <ValidationMessage For="@(() => user.LastName)" />
+    </div>
+    <div class="mb-3">
+        <label for="CompanyName" class="form-label">Company Name</label>
+        <div class="col-md-4">
+            <InputText class="form-control" @bind-Value="user.CompanyName" />
+        </div>
+        <ValidationMessage For="@(() => user.CompanyName)" />
+    </div>
+    <div class="mb-3">
+        <label for="PhoneNumber" class="form-label">Phone number</label>
+        <div class="col-md-4">
+            <InputText class="form-control" @bind-Value="user.PhoneNumber" />
+        </div>
+        <ValidationMessage For="@(() => user.PhoneNumber)" />
+    </div>
+    <div class="mb-3">
+        <label for="Email" class="form-label">E-mail</label>
+        <div class="col-md-4">
+            <InputText class="form-control" @bind-Value="user.Email" />
+        </div>
+        <ValidationMessage For="@(() => user.Email)" />
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <button class="btn btn-light" @onclick="Cancel">Cancel</button>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int userId { get; set; }
+
+    private const string RequestUri = "https://localhost:7199/api/User";
+    protected User user = new User();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (userId != 0)
+        {
+            user = await Http.GetFromJsonAsync<User>($"{RequestUri}/{userId}");
+        }
+    }
+
+    protected async Task SaveUser()
+    {
+        if (user.Id != 0)
+        {
+            await Http.PutAsJsonAsync($"{RequestUri}/{user.Id}", user);
+        }
+        else
+        {
+            await Http.PostAsJsonAsync(RequestUri, user);
+        }
+        Cancel();
+    }
+
+    public void Cancel()
+    {
+        NavigationManager.NavigateTo("/manageuser");
+    }
+}

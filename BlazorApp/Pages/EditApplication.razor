@@ -1,0 +1,66 @@
+﻿c@page "/application/edit/{applicationId:int}"
+@attribute [Authorize]
+@using BlazorApp.Models
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<h2>Edit Application</h2>
+
+<EditForm Model="@application" OnValidSubmit="SaveApplication">
+    <DataAnnotationsValidator />
+
+    <div class="mb-3">
+        <label for="ApplicationName" class="form-label">Application Name</label>
+        <div class="col-md-4">
+            <InputText class="form-control" @bind-Value="application.ApplicationName" />
+        </div>
+        <ValidationMessage For="@(() => application.ApplicationName)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="Description" class="form-label">Description</label>
+        <div class="col-md-4">
+            <InputText class="form-control" @bind-Value="application.Description" />
+        </div>
+        <ValidationMessage For="@(() => application.Description)" />
+    </div>
+
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <button class="btn btn-light" @onclick="Cancel">Cancel</button>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int applicationId { get; set; }
+
+    private const string RequestUri = "https://localhost:7199/api/Application";
+    protected ApplicationModel application = new ApplicationModel();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (applicationId != 0)
+        {
+            application = await Http.GetFromJsonAsync<ApplicationModel>($"{RequestUri}/{applicationId}");
+        }
+    }
+
+    protected async Task SaveApplication()
+    {
+        if (application.Id != 0)
+        {
+            await Http.PutAsJsonAsync($"{RequestUri}/{application.Id}", application);
+        }
+        else
+        {
+            // Handle the case where the application ID is not valid
+        }
+        Cancel();
+    }
+
+    public void Cancel()
+    {
+        NavigationManager.NavigateTo("/manageapplication");
+    }
+}

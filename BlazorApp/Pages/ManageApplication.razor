@@ -1,0 +1,63 @@
+﻿@using BlazorApp.Models
+@page "/manageapplication"
+@attribute [Authorize]
+
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<h2>Manage Applications</h2>
+<div class="mb-3">
+    <a href='/application/add' class="btn btn-primary" role="button">
+        <i class="fas fa-plus"></i>
+        Add Application
+    </a>
+</div>
+@if (applicationList == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Application Name</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var application in applicationList)
+            {
+                <tr>
+                    <td>@application.Id</td>
+                    <td>@application.ApplicationName</td>
+                    <td>@application.Description</td>
+                    <td>
+                        <a href='/application/edit/@application.Id' class="btn btn-outline-dark" role="button">
+                            Edit
+                        </a>
+                        <a href='/application/delete/@application.Id' class="btn btn-outline-danger" role="button">
+                            Delete
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    protected List<ApplicationModel> applicationList;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetApplications();
+    }
+
+    protected async Task GetApplications()
+    {
+        applicationList = await Http.GetFromJsonAsync<List<ApplicationModel>>("https://localhost:7199/api/Application");
+    }
+}

@@ -1,0 +1,78 @@
+﻿@page "/managelicense"
+@using BlazorApp.Models
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@attribute [Authorize]
+<h2>Manage Licenses</h2>
+
+@if (licenseList == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>User Name</th>
+                <th>Application Name</th>
+                <th>License Key</th>
+                <th>Active</th>
+                <th>Created At</th>
+                <th>Created By</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var license in licenseList)
+            {
+                <tr>
+                    <td>@license.Id</td>
+                    <td>@license.UserName</td>
+                    <td>@license.ApplicationName</td>
+                    <td>@license.LicenseKey</td>
+                    <td>@(license.IsActive ? "Yes" : "No")</td>
+                    <td>@license.CreatedAt</td>
+                    <td>@license.CreatedBy</td>
+                    <td>
+
+                        <button class="btn btn-primary" @onclick="() => UpdateLicenseStatus(license.LicenseKey, true)">Activate </button>
+
+                        <button class="btn btn-danger"@onclick="() => UpdateLicenseStatus(license.LicenseKey, true)">Deactivate</button>
+
+
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    protected List<FetchLicense> licenseList;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetLicenses();
+    }
+
+    protected async Task GetLicenses()
+    {
+        licenseList = await Http.GetFromJsonAsync<List<FetchLicense>>("https://localhost:7199/api/License");
+    }
+    protected async Task UpdateLicenseStatus(string licenseKey, bool activate)
+    {
+        var status = activate ? "activate" : "deactivate";
+        await Http.PostAsJsonAsync($"https://localhost:7199/api/License/update-license/{licenseKey}?status={status}", (object)null);
+
+        // Update the local licenseList based on the response from the server
+        var updatedLicense = licenseList.Find(l => l.LicenseKey == licenseKey);
+        if (updatedLicense != null)
+        {
+            updatedLicense.IsActive = activate;
+        }
+    }
+   
+}

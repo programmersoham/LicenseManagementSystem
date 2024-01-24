@@ -1,0 +1,90 @@
+﻿@page "/"
+@using BlazorApp
+
+@inject HttpClient HttpClient
+@inject NavigationManager NavigationManager
+
+@using System.Net.Http.Json;
+@using System.Security.Claims;
+@using Microsoft.AspNetCore.Components.Authorization;
+
+<div class="container mt-5">
+    <div class="card w-50 mx-auto">
+        <div class="card-body">
+            <h3 class="card-title text-center mb-4">Login</h3>
+
+            @if (!IsAuthenticated)
+            {
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username:</label>
+                    <input id="username" class="form-control" @bind="Username" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password:</label>
+                    <input type="password" id="password" class="form-control" @bind="Password" />
+                </div>
+
+                <button class="btn btn-primary" @onclick="LoginClicked">Login</button>
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/AddLicense");
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private string? Username { get; set; }
+    private string? Password { get; set; }
+    private bool IsAuthenticated { get; set; }
+
+
+
+    private async Task LoginClicked()
+    {
+        if (!string.IsNullOrEmpty(Username) && !string.IsNullOrEmpty(Password))
+        {
+            var loginModel = new
+            {
+                Username,
+                Password
+            };
+
+            try
+            {
+                var response = await HttpClient.PostAsJsonAsync("https://localhost:7199/api/Auth/Login", loginModel);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    // Authentication successful
+                    IsAuthenticated = true;
+
+                    // Update Authentication State
+
+
+
+
+
+
+
+                    NavigationManager.NavigateTo("/addlicense", forceLoad: true, replace: true);
+                }
+                else
+                {
+                    IsAuthenticated = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle exceptions
+                Console.WriteLine($"Exception: {ex.Message}");
+                IsAuthenticated = false;
+            }
+        }
+    }
+}
+ 
+
+

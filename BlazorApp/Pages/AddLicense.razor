@@ -1,0 +1,111 @@
+﻿@attribute [Authorize]
+@page "/addlicense"
+@using BlazorApp.Models
+@inject HttpClient HttpClient
+<PageTitle>Index</PageTitle>
+
+<h1>Add License</h1>
+
+ 
+    <form @onsubmit="HandleSubmit">
+        <div class="form-group">
+            <label for="userDropdown">Account</label>
+            <select class="form-control" id="userDropdown" @bind="selectedUser" required>
+                <option value="" disabled selected>Select User</option>
+                @foreach (var user in users)
+                {
+                    <option>@($"{user.FirstName} {user.LastName}")</option>
+                }
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="appDropdown">Application Name</label>
+            <select class="form-control" id="appDropdown" @bind="selectedApplication" required>
+                <option value="" disabled selected>Select Application</option>
+                @foreach (var app in applications)
+                {
+                    <option value="@app.ApplicationName">@app.ApplicationName</option>
+                }
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="total">Total License</label>
+            <input type="number" class="form-control" id="total" @bind="total" required placeholder="Total License" />
+        </div>
+
+        <div class="form-group">
+            <label for="prefix">License Prefix</label>
+            <input type="text" class="form-control" id="prefix" @bind="prefix" required placeholder="License Prefix" />
+        </div>
+
+        <div class="form-group">
+            <label for="start">License Start Value</label>
+            <input type="text" class="form-control" id="start" @bind="start" required placeholder="Start Value" />
+        </div>
+    <button type="submit" class="btn btn-primary my-2">Generate</button>
+</form>
+
+
+
+@code {
+    private List<User> users = new List<User>();
+    private List<ApplicationModel> applications = new List<ApplicationModel>();
+    private string? selectedUser;
+    private string? selectedApplication;
+    private int total;
+    private string? prefix;
+    private string? start;
+    //private bool formSubmitted = false;
+    private List<string> generatedLicenses = new List<string>();
+
+        protected override async Task OnInitializedAsync()
+    {
+        // Fetch user data from API
+        var usersResponse = await HttpClient.GetFromJsonAsync<List<User>>("https://localhost:7199/api/User");
+        if (usersResponse != null)
+        {
+            users = usersResponse;
+        }
+        // Fetch application data from API
+    var applicationsResponse = await HttpClient.GetFromJsonAsync<List<ApplicationModel>>("https://localhost:7199/api/Application");
+        if (applicationsResponse != null)
+        {
+            applications = applicationsResponse;
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        //formSubmitted = true;
+
+        
+
+        
+        
+
+        var formData = new
+        {
+            UserName = selectedUser,
+            ApplicationName = selectedApplication,
+            TotalLicense = total,
+            LicensePrefix = prefix,
+            LicenseStartValue = start
+        };
+        var response = await HttpClient.PostAsJsonAsync("https://localhost:7199/api/License", formData);
+        if (response.IsSuccessStatusCode)
+        {
+            // Successfully submitted the form data
+            Console.WriteLine("Data sent to Backend");
+        }
+        else
+        {
+            //  API call not successful
+            Console.WriteLine($"Error: {response.StatusCode}");
+        }
+
+
+
+    }
+}
