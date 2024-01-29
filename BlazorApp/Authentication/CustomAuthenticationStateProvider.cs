@@ -1,33 +1,31 @@
 ﻿using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using System.Security.Claims;
+using Blazored.LocalStorage;
 
 namespace BlazorApp.Authentication
 {
     public class CustomAuthenticationStateProvider : AuthenticationStateProvider
     {
-        private readonly ProtectedSessionStorage _sessionStorage;
+        private readonly ILocalStorageService _localStorage;
         private ClaimsPrincipal _anonymous = new ClaimsPrincipal(new ClaimsIdentity());
 
-        public CustomAuthenticationStateProvider(ProtectedSessionStorage sessionStorage)
+        public CustomAuthenticationStateProvider(ILocalStorageService localStorage)
         {
-            _sessionStorage = sessionStorage;
+            _localStorage = localStorage;
         }
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
             try
             {
-                
-                var userSessionStorageResult = await _sessionStorage.GetAsync<UserSession>("UserSession");
-                var userSession = userSessionStorageResult.Success ? userSessionStorageResult.Value : null;
+                var userSession = await _localStorage.GetItemAsync<UserSession>("UserSession");
                 if (userSession == null)
                     return await Task.FromResult(new AuthenticationState(_anonymous));
                 var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
-                {
-                    new Claim(ClaimTypes.Name, userSession.UserName),
+                    {
+                        new Claim(ClaimTypes.Name, userSession.UserName),
 
-                }, "CustomAuth"));
+                    }, "CustomAuth"));
                 return await Task.FromResult(new AuthenticationState(claimsPrincipal));
             }
             catch
@@ -42,16 +40,16 @@ namespace BlazorApp.Authentication
 
             if (userSession != null)
             {
-                await _sessionStorage.SetAsync("UserSession", userSession);
+                await _localStorage.SetItemAsync("UserSession", userSession);
                 claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
-                {
-                    new Claim(ClaimTypes.Name, userSession.UserName),
+                    {
+                        new Claim(ClaimTypes.Name, userSession.UserName),
 
-                }));
+                    }));
             }
             else
             {
-                await _sessionStorage.DeleteAsync("UserSession");
+                await _localStorage.RemoveItemAsync("UserSession");
                 claimsPrincipal = _anonymous;
             }
 

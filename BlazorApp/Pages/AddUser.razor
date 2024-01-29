@@ -5,7 +5,7 @@
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
 
-<EditForm Model="@user" OnValidSubmit="SaveUser">
+<EditForm Model="@user" OnValidSubmit="@SaveUser">
     <DataAnnotationsValidator />
     <div class="mb-3">
         <label for="FirstName" class="form-label">First Name</label>

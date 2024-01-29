@@ -3,8 +3,12 @@
 @inject AuthenticationStateProvider authStateProvider
 @inject NavigationManager NavigationManager
 
-<AuthorizeView><Authorized><p>@authMessage</p></Authorized></AuthorizeView>
-
+<AuthorizeView><Authorized><p>@authMessage</p>
+      <button @onclick="logout" class="btn btn-primary">logout</button> 
+    </Authorized></AuthorizeView>
+<AuthorizeView><NotAuthorized>
+    <p>Please log in</p>
+    <button class="btn btn-primary" @onclick="RedirectToLogin"> login</button></NotAuthorized></AuthorizeView>
 @code {
     private string? authMessage;
 
@@ -24,13 +28,19 @@
         }
         else
         {
-            RedirectToLogin();
+
         }
     }
-
     private void RedirectToLogin()
     {
-        // Redirect to login page
-        NavigationManager.NavigateTo("/login", forceLoad: true);
+        NavigationManager.NavigateTo("/login");
     }
+     private async void logout()
+    {
+        var customAuthStateProvider = (CustomAuthenticationStateProvider)authStateProvider;
+        await customAuthStateProvider.UpdateAuthenticationState(null);
+          
+        
+     }
+    
 }

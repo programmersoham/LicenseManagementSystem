@@ -1,4 +1,5 @@
-﻿namespace API.Models
+﻿// No need to add in database. This is just a model to get the data from the user and pass it to the controller.
+namespace API.Models
 {
     public class LicenseRequestModel
     {
@@ -15,5 +16,6 @@
 
 
         public string LicenseStartValue { get; set; }
+        public string CreatedBy { get; set; }
     }
 }

@@ -24,10 +24,10 @@ namespace API.Controllers
                 return BadRequest(ModelState);
             }
 
-            string createdBy = HttpContext.User.Identity.Name;
+            
 
 
-            List<string> generatedLicenses = GenerateLicenses(request.TotalLicense, request.LicensePrefix, request.LicenseStartValue,request.UserName,request.ApplicationName,createdBy);
+            List<string> generatedLicenses = GenerateLicenses(request.TotalLicense, request.LicensePrefix, request.LicenseStartValue,request.UserName,request.ApplicationName,request.CreatedBy);
             // Save license to database using bulkinsert
 
 
@@ -38,7 +38,7 @@ namespace API.Controllers
                 LicenseKey = licenseKey,
                 IsActive = true, 
                 CreatedAt = DateTime.UtcNow,
-                CreatedBy = createdBy
+                CreatedBy = request.CreatedBy
             }).ToList();
 
             _context.BulkInsert(licenseEntities);
