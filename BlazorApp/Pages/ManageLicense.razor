@@ -5,6 +5,29 @@
 @inject NavigationManager NavigationManager
 @attribute [Authorize]
 <h2>Manage Licenses</h2>
+<div class="row">
+    <div class="col-md-6">
+        <a href='/addlicense/' class="btn btn-primary" role="button">
+            <i class="fas fa-user-plus"></i>
+            Add License
+        </a>
+    </div>
+    <div class="input-group col">
+        <input type="text" class="form-control" placeholder="Search license by key"
+               @bind="SearchString" @bind:event="oninput" @onkeyup="FilterLicense" />
+        @if (SearchString.Length > 0)
+        {
+            <div class="input-group-append">
+                <button class="btn btn-danger" @onclick="ResetSearch">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        }
+    </div>
+</div>
+<br />
+
+
 
 @if (licenseList == null)
 {
@@ -40,7 +63,7 @@ else
 
                         <button class="btn btn-primary" @onclick="() => UpdateLicenseStatus(license.LicenseKey, true)">Activate </button>
 
-                        <button class="btn btn-danger"@onclick="() => UpdateLicenseStatus(license.LicenseKey, true)">Deactivate</button>
+                        <button class="btn btn-danger"@onclick="() => UpdateLicenseStatus(license.LicenseKey, false)">Deactivate</button>
 
 
                     </td>
@@ -48,31 +71,113 @@ else
             }
         </tbody>
     </table>
+   
+    <nav aria-label="Page-navigation">
+        <ul class="pagination">
+            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                <a class="page-link" @onclick="() => ChangePage(1)">First</a>
+            </li>
+            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                <a class="page-link" @onclick="() => ChangePage(currentPage - 1)">Previous</a>
+            </li>
+           
+            @for (var i = Math.Max(1, currentPage - 2); i <= Math.Min(totalPages, currentPage + 2); i++)
+            {
+                <li class="page-item @(i == currentPage ? "active" : "")">
+                    <a class="page-link" @onclick="() => ChangePage(i)">@i</a>
+                </li>
+            }
+
+            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                <a class="page-link" @onclick="() => ChangePage(currentPage + 1)">Next</a>
+            </li>
+            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                <a class="page-link" @onclick="() => ChangePage(totalPages)">Last</a>
+            </li>
+        </ul>
+    </nav>
+
+
+
 }
+
 
 @code {
     protected List<FetchLicense> licenseList;
+    protected List<FetchLicense>? searchLicenseData = new List<FetchLicense>();
+    protected string SearchString { get; set; } = string.Empty;
+    private int currentPage = 1;
+    private int totalPages = 0;
+    private const int PageSize = 10;
 
     protected override async Task OnInitializedAsync()
     {
         await GetLicenses();
+        searchLicenseData = licenseList;
+        totalPages=(int)Math.Ceiling(licenseList.Count / (double)PageSize);
+        //licenseList = licenseList.Take(PageSize).ToList();
+        ChangePage(currentPage);
+    }
+    protected void ChangePage(int page)
+    {
+        currentPage = page;
+        // var skip = (currentPage - 1) * PageSize;
+        // licenseList = searchLicenseData.Skip(skip).Take(PageSize).ToList();
+        var skip = (currentPage - 1) * PageSize;
+        licenseList = searchLicenseData.Skip(skip).Take(PageSize).ToList();
+        StateHasChanged();  
+    }
+    protected void FilterLicense()
+    {
+        if (!string.IsNullOrEmpty(SearchString))
+        {
+            licenseList = searchLicenseData
+                .Where(x => x.LicenseKey.IndexOf(SearchString, StringComparison.OrdinalIgnoreCase) != -1)
+                .ToList();
+        }
+        else
+        {
+            licenseList = searchLicenseData;
+        }
     }
 
+    public void ResetSearch()
+    {
+        SearchString = string.Empty;
+        licenseList = searchLicenseData;
+    }
     protected async Task GetLicenses()
     {
         licenseList = await Http.GetFromJsonAsync<List<FetchLicense>>("https://localhost:7199/api/License");
     }
+    // protected async Task UpdateLicenseStatus(string licenseKey, bool activate)
+    // {
+    //     var status = activate ? "activate" : "deactivate";
+    //   
+    //     await Http.PostAsJsonAsync($"https://localhost:7199/api/License/update-license/{licenseKey}?status={status}", );
+
+        
+    //     var updatedLicense = licenseList.Find(l => l.LicenseKey == licenseKey);
+    //     if (updatedLicense != null)
+    //     {
+    //         updatedLicense.IsActive = activate;
+    //     }
+    // }
     protected async Task UpdateLicenseStatus(string licenseKey, bool activate)
     {
         var status = activate ? "activate" : "deactivate";
-        await Http.PostAsJsonAsync($"https://localhost:7199/api/License/update-license/{licenseKey}?status={status}", (object)null);
+        var httpContent = JsonContent.Create(activate);
+        
+       //seding null here, do not remove null from here.
+        await Http.PutAsync($"https://localhost:7199/api/License/update-license/{licenseKey}", httpContent);
+        
 
-        // Update the local licenseList based on the response from the server
         var updatedLicense = licenseList.Find(l => l.LicenseKey == licenseKey);
         if (updatedLicense != null)
         {
             updatedLicense.IsActive = activate;
         }
     }
-   
+
 }
+
