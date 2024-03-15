@@ -45,7 +45,7 @@ namespace API.Data
 			try
 			{
 				//Set Connection string
-				string conString = "Data Source=LAPTOP-86F84E0O;Initial Catalog=LicenseDB;Integrated Security=True;Trust Server Certificate=True";
+				string conString = "Data Source=LAPTOP-86F84E0O;Initial Catalog=LicenseDB;Integrated Security=True;";
 				using (SqlConnection con = new SqlConnection(conString))
 				{
 					con.Open();
@@ -59,7 +59,7 @@ namespace API.Data
 							{
 								if (null != parameter) cmd.Parameters.Add(parameter);
 							}
-						}
+						}																	
 						using (SqlDataAdapter da = new SqlDataAdapter(cmd))
 						{
 							DataSet ds = new DataSet();

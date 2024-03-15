@@ -30,8 +30,4 @@
     <PackageReference Include="Z.EntityFramework.Extensions.EFCore" Version="7.101.2" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Data\" />
-  </ItemGroup>
-
 </Project>

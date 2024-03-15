@@ -1,4 +1,6 @@
-﻿using API.Models;
+﻿using API.Data;
+using API.Models;
+using API.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,10 +11,16 @@ namespace API.Controllers
     public class LicenseController : ControllerBase
     {
         private readonly DatabaseContext _context;
+        
+        private readonly LicenseService _licenseService;
 
-        public LicenseController(DatabaseContext context)
+
+
+        public LicenseController(DatabaseContext context, LicenseService licenseService)
         {
             _context = context;
+            
+            _licenseService = licenseService;
         }
 
         [HttpPost]
@@ -53,11 +61,23 @@ namespace API.Controllers
         {
             try
             {
-                var alllicense = _context.Licenses.ToList();
-                return Ok(alllicense);
+                var licenses = _licenseService.GetAllLicenses();
+                return Ok(licenses);
+
             }
             catch (Exception ex) { return StatusCode(500,new { Message = $"Internal Server Error: {ex.Message}" });}
         }
+
+        // using EF
+        //public IActionResult GetAllLicense()
+        //{
+        //    try
+        //    {
+        //        var alllicense = _context.Licenses.ToList();
+        //        return Ok(alllicense);
+        //    }
+        //    catch (Exception ex) { return StatusCode(500,new { Message = $"Internal Server Error: {ex.Message}" });}
+        //}
         
         [HttpPut("update-license/{licenseKey}")]
         public IActionResult UpdateLicenseState(string licenseKey, [FromBody] bool isActive)
